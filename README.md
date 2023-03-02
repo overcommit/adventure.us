@@ -39,18 +39,23 @@ Adventure, Us
 ---
 ## **Schedule**
 
-~~~
+
 **Week 1 MVP:** 
+~~~
 - Geolocate the user
 - Call API from radius to find restaurants
 - Randomly select restaurant and provide the user it's name and contact information
 - History of results
+~~~
 **Week 2 Iteration:** 
+~~~
 - Cache API results to avoid unnecessary calls
 - Map UI
 - Radius adjustment
 - Venue refining
+~~~
 **Week 3 Iteration**
+~~~
 - User registration/profile/history/preferences
 - Venue ratings
 - Inclusion of menu items
