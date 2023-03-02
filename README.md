@@ -1,7 +1,9 @@
 Adventure, Us
 ## **Project Overview**
 ~~~
-*Adventure, Us* is a food venue choice solution, for the tired, for the indecisive, for those looking to break up their routine, or for those new to and visiting an area looking for a bite to eat. The app will call FourSquare API to locate available food establishments in a given area/radius(a choice of manually entry or geolocation) and give the user a random selection.
+*Adventure, Us* is a food venue choice solution, for the tired, for the indecisive, for those looking to break up their routine, 
+or for those new to and visiting an area looking for a bite to eat. The app will call FourSquare API to locate available food establishments 
+in a given area/radius(a choice of manually entry or geolocation) and give the user a random selection.
 ~~~
 
 ---
@@ -19,7 +21,7 @@ Adventure, Us
 - Adventure, Us specific reviews
 - The ability to share and follow other users food experiences and reviews/ratings
 - App selection of a random menu item
-- Automation from ordering the randomly selected menu item with payment information if a payment gateway exists to directing the phone call to the user's calling app on their phone
+- Automation from ordering the randomly selected menu item with payment information
 - Sponsored content in the form of venue ads or promotions of special events in the area
 - Recipie searching/generation for meals you enjoyed
 - Dietary restrictions
