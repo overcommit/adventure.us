@@ -46,6 +46,7 @@ Adventure, Us
 - Call API from radius to find restaurants
 - Randomly select restaurant and provide the user it's name and contact information
 - History of results
+- Barebones UI
 ~~~
 **Week 2 Iteration:** 
 ~~~
