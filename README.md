@@ -31,9 +31,8 @@ Adventure, Us
 
 ~~~
 - Users
-- Locations
+- History
 - API
-- Storage/caching
 ~~~
 
 ---
