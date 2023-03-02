@@ -39,6 +39,7 @@ Adventure, Us
 ---
 ## **Schedule**
 
+~~~
 **Week 1 MVP:** 
 - Geolocate the user
 - Call API from radius to find restaurants
@@ -54,4 +55,5 @@ Adventure, Us
 - Venue ratings
 - Inclusion of menu items
 - Any other additional features mentioned under the *Functionality* section.
+~~~
 ---
