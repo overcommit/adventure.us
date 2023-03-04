@@ -1,4 +1,4 @@
-Adventure, Us
+Adventure: Us
 ## **Project Overview**
 
 *Adventure: Us* is a food venue choice solution, for the tired, for the indecisive, for those looking to break up their routine, or for those new to and visiting an area looking for a bite to eat. The app will call FourSquare API to locate available food establishments in a given area/radius(a choice of manually entry or geolocation) and give the user a random selection.
