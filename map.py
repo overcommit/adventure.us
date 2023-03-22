@@ -44,10 +44,8 @@ def check_password():
     elif not st.session_state["password_correct"]:
         # Password not correct, show input + error.
         st.text_input("Username", on_change=password_entered, key="username")
-        st.text_input(
-            "Password", type="password", on_change=password_entered, key="password"
-        )
-        st.error("😕 User not known or password incorrect")
+        st.text_input("Password", type="password", on_change=password_entered, key="password")
+        st.error("Username or password incorrect")
         return False
     else:
         # Password correct.
@@ -67,7 +65,6 @@ if check_password():
 
         if response.status_code == 200 and data["features"]:
             return f"{data['features'][0]['center'][1]},{data['features'][0]['center'][0]}"
-
         else:
             return None
 
