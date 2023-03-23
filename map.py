@@ -62,7 +62,6 @@ if check_password():
 
         response = requests.get(f"{MAPBOX_GEOCODING_API_BASE_URL}/{location_name}.json", params=params)
         data = response.json()
-        print(data)
 
         if response.status_code == 200 and data["features"]:
             return f"{data['features'][0]['center'][1]},{data['features'][0]['center'][0]}"
@@ -78,6 +77,7 @@ if check_password():
             "radius": radius,
             "open_now": "true",
             "sort": "DISTANCE",
+            "fields": "fsq_id,name,geocodes,location,categories,distance,website,tel",
         }
 
         headers = {
@@ -89,28 +89,27 @@ if check_password():
 
         if response.status_code == 200:
             data = response.json()
-            if "results" in data["results"]:
-                venues = data["results"]
-                df_venues = pd.DataFrame.from_records(venues)
+            venues = data["results"]
+            print(venues)
+            df_venues = pd.DataFrame.from_records(venues)
 
-                # Select and rename columns
-                df_venues = df_venues[["fsq_id", "name", "geocodes", "location", "categories", "distance"]]
-                df_venues.columns = ["id", "name", "geocodes", "location", "categories", "distance"]
+            # Select and rename columns
+            df_venues = df_venues[["fsq_id", "name", "geocodes", "location", "categories", "distance", "website", "tel"]]
+            df_venues.columns = ["id", "name", "geocodes", "location", "categories", "distance", "website", "tel"]
 
-                # Extract latitude and longitude
-                df_venues["latitude"] = df_venues["geocodes"].apply(lambda x: x["main"]["latitude"])
-                df_venues["longitude"] = df_venues["geocodes"].apply(lambda x: x["main"]["longitude"])
+            # Extract latitude and longitude
+            df_venues["latitude"] = df_venues["geocodes"].apply(lambda x: x["main"]["latitude"])
+            df_venues["longitude"] = df_venues["geocodes"].apply(lambda x: x["main"]["longitude"])
 
-                # Extract formatted address
-                df_venues["address"] = df_venues["location"].apply(lambda x: x["formatted_address"])
+            # Extract formatted address
+            df_venues["address"] = df_venues["location"].apply(lambda x: x["address"])
 
-                # Convert categories to comma-separated string
-                df_venues["categories"] = df_venues["categories"].apply(lambda x: ", ".join([category["name"] for category in x]))
+            # Convert categories to comma-separated string
+            df_venues["categories"] = df_venues["categories"].apply(lambda x: ", ".join([category["name"] for category in x]))
 
-                # Drop unnecessary columns
-                df_venues.drop(columns=["geocodes", "location"], inplace=True)
-
-                return df_venues
+            # Drop unnecessary columns
+            df_venues.drop(columns=["geocodes", "location"], inplace=True)
+            return df_venues
         else:
             st.error("Error fetching data from the API.")
             return pd.DataFrame()
@@ -123,17 +122,22 @@ if check_password():
         location_coordinates = get_location_coordinates(location_name)
         if location_coordinates:
             venues = get_venues(location_coordinates, radius)
-            if venues:
-                selected_venue = np.random.choice(venues)
+            if len(venues) == 0:
+                st.error("No venues found. Please try another location or radius.")
+            else:
+                random_venue = np.random.choice(venues['name'].values)
+                selected_venue = venues.loc[venues['name'] == random_venue].squeeze()
                 st.write(f"Selected venue: {selected_venue['name']}")
-                st.write(f"Address: {', '.join(selected_venue['address'])}")
-                st.write(f"Contact: {selected_venue['contact']}")
+                st.write(f"Address: {selected_venue['address']}")
+                st.write(f"Website: {selected_venue['website']}")
+                st.write(f"Phone number: {selected_venue['tel']}")
+
 
                 st.pydeck_chart(pdk.Deck(
                     map_style="mapbox://styles/mapbox/light-v9",
                     initial_view_state={
-                        "latitude": selected_venue['location'][0],
-                        "longitude": selected_venue['location'][1],
+                        "latitude": selected_venue['latitude'],
+                        "longitude": selected_venue['longitude'],
                         "zoom": 14,
                         "pitch": 50,
                     },
@@ -141,17 +145,15 @@ if check_password():
                         pdk.Layer(
                             "ScatterplotLayer",
                             data=pd.DataFrame([selected_venue]),
-                            get_position="location",
-                            get_radius=100,
+                            get_position=["longitude", "latitude"],
+                            get_radius=10,
                             get_fill_color=[255, 0, 0, 160],
                             pickable=True,
                             auto_highlight=True,
                         ),
                     ],
-                    mapbox_key = mbtk,
                     tooltip={"text": "{name}\nAddress: {address}\nContact: {contact}"}
-                ))
-            else:
-                st.error("No venues found. Please try another location or radius.")
+                    ))
         else:
             st.error("Invalid location. Please enter a valid town or city name.")
+            
