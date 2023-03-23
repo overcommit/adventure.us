@@ -62,6 +62,7 @@ if check_password():
 
         response = requests.get(f"{MAPBOX_GEOCODING_API_BASE_URL}/{location_name}.json", params=params)
         data = response.json()
+        print(data)
 
         if response.status_code == 200 and data["features"]:
             return f"{data['features'][0]['center'][1]},{data['features'][0]['center'][0]}"
