@@ -90,7 +90,6 @@ if check_password():
         if response.status_code == 200:
             data = response.json()
             venues = data["results"]
-            print(venues)
             df_venues = pd.DataFrame.from_records(venues)
 
             # Select and rename columns
@@ -114,9 +113,10 @@ if check_password():
             st.error("Error fetching data from the API.")
             return pd.DataFrame()
 
-    st.title("Random Food Venue Finder")
+    st.title("Decider4U")
     location_name = st.text_input("Enter a town or city name:", value="")
-    radius = st.number_input("Radius (meters):", min_value=100, max_value=50000, value=1000, step=100)
+    radius_uncoverted = st.number_input("Search Radius(miles):", min_value=1, max_value=50, value=5, step=1)
+    radius = radius_uncoverted * 1609
 
     if st.button("Find Random Venue"):
         location_coordinates = get_location_coordinates(location_name)
@@ -127,7 +127,7 @@ if check_password():
             else:
                 random_venue = np.random.choice(venues['name'].values)
                 selected_venue = venues.loc[venues['name'] == random_venue].squeeze()
-                st.write(f"Selected venue: {selected_venue['name']}")
+                st.write(f"{selected_venue['name']}")
                 st.write(f"Address: {selected_venue['address']}")
                 st.write(f"Website: {selected_venue['website']}")
                 st.write(f"Phone number: {selected_venue['tel']}")
@@ -138,7 +138,7 @@ if check_password():
                     initial_view_state={
                         "latitude": selected_venue['latitude'],
                         "longitude": selected_venue['longitude'],
-                        "zoom": 14,
+                        "zoom": 16,
                         "pitch": 50,
                     },
                     layers=[
@@ -156,4 +156,21 @@ if check_password():
                     ))
         else:
             st.error("Invalid location. Please enter a valid town or city name.")
-            
+
+st.markdown("""
+    <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+    </style>
+""", unsafe_allow_html=True)
+
+# Hide the "made with Streamlit" footer
+hide_streamlit_style = """
+    <style>
+        #MainMenu {display: none;}
+        footer {display: none;}
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+# Add your Streamlit app code below
