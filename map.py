@@ -73,6 +73,17 @@ location_name = st.text_input("Enter a town or city name:", value="")
 radius_uncoverted = st.number_input("Search Radius(miles):", min_value=1, max_value=50, value=5, step=1)
 radius = radius_uncoverted * 1609
 
+ICON_URL = "https://upload.wikimedia.org/wikipedia/commons/c/c4/Projet_bi%C3%A8re_logo_v2.png"
+
+icon_data = {
+    # Icon from Wikimedia, used the Creative Commons Attribution-Share Alike 3.0
+    # Unported, 2.5 Generic, 2.0 Generic and 1.0 Generic licenses
+    "url": ICON_URL,
+    "width": 242,
+    "height": 242,
+    "anchorY": 242,
+}
+
 if st.button("Find Random Venue"):
     location_coordinates = get_location_coordinates(location_name)
     if location_coordinates:
@@ -98,13 +109,13 @@ if st.button("Find Random Venue"):
                 },
                 layers=[
                     pdk.Layer(
-                        "ScatterplotLayer",
+                        "IconLayer",
                         data=pd.DataFrame([selected_venue]),
                         get_position=["longitude", "latitude"],
-                        get_radius=10,
-                        get_fill_color=[255, 0, 0, 160],
+                        get_icon="icon_data",
+                        get_size=4,
+                        size_scale=15,
                         pickable=True,
-                        auto_highlight=True,
                     ),
                 ],
                 tooltip={"text": "{name}\nAddress: {address}"}
