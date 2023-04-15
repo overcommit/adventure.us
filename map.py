@@ -108,7 +108,7 @@ if st.button("Find Random Venue"):
                 },
                 layers=[
                     pdk.Layer(
-                        type="IconLayer",
+                        "IconLayer",
                         data=pd.DataFrame([selected_venue]),
                         get_position=["longitude", "latitude"],
                         get_icon=icon_data,
