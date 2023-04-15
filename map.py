@@ -3,10 +3,7 @@ import pydeck as pdk
 import numpy as np
 import pandas as pd
 import requests
-from django.core.wsgi import get_wsgi_application
-from django.contrib.auth import authenticate
 
-application = get_wsgi_application()
 FOURSQUARE_API_BASE_URL = "https://api.foursquare.com/v3/places/search"
 MAPBOX_GEOCODING_API_BASE_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places"
 
