@@ -75,14 +75,6 @@ radius = radius_uncoverted * 1609
 
 ICON_URL = "https://upload.wikimedia.org/wikipedia/commons/c/c4/Projet_bi%C3%A8re_logo_v2.png"
 
-icon_data = {
-    # Icon from Wikimedia, used the Creative Commons Attribution-Share Alike 3.0
-    # Unported, 2.5 Generic, 2.0 Generic and 1.0 Generic licenses
-    "url": ICON_URL,
-    "width": 242,
-    "height": 242,
-    "anchorY": 242,
-}
 
 if st.button("Find Random Venue"):
     location_coordinates = get_location_coordinates(location_name)
@@ -98,7 +90,14 @@ if st.button("Find Random Venue"):
             st.write(f"Website: {selected_venue['website']}")
             st.write(f"Phone number: {selected_venue['tel']}")
 
-
+            icon_data = {
+            # Icon from Wikimedia, used the Creative Commons Attribution-Share Alike 3.0
+            # Unported, 2.5 Generic, 2.0 Generic and 1.0 Generic licenses
+            "url": ICON_URL,
+            "width": 242,
+            "height": 242,
+            "anchorY": 242,
+            }
             st.pydeck_chart(pdk.Deck(
                 map_style=None,
                 initial_view_state={
