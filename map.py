@@ -3,159 +3,114 @@ import pydeck as pdk
 import numpy as np
 import pandas as pd
 import requests
-from FS import fstk
-from MB import mbtk
-import os
 from django.core.wsgi import get_wsgi_application
 from django.contrib.auth import authenticate
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+
 application = get_wsgi_application()
-
-
-# Foursquare API v3 base URL
 FOURSQUARE_API_BASE_URL = "https://api.foursquare.com/v3/places/search"
-
 MAPBOX_GEOCODING_API_BASE_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places"
 
-def check_password():
-    """Returns `True` if the user had a correct password."""
 
-    def password_entered():
-        """Checks whether a password entered by the user is correct."""
-        user = authenticate(
-            username=st.session_state['username'], 
-            password=st.session_state['password']
-            )
-        
-        if (user is not None):
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  # don't store username + password
-            del st.session_state["username"]
-        else:
-            st.session_state["password_correct"] = False
-
-    if "password_correct" not in st.session_state:
-        # First run, show inputs for username + password.
-        st.text_input("Username", on_change=password_entered, key="username")
-        st.text_input(
-            "Password", type="password", on_change=password_entered, key="password"
-        )
-        return False
-    elif not st.session_state["password_correct"]:
-        # Password not correct, show input + error.
-        st.text_input("Username", on_change=password_entered, key="username")
-        st.text_input("Password", type="password", on_change=password_entered, key="password")
-        st.error("Username or password incorrect")
-        return False
+@st.cache_data
+def get_location_coordinates(location_name):
+    params = {
+        "access_token": mbtk,
+        "limit": 1,
+    }
+    response = requests.get(f"{MAPBOX_GEOCODING_API_BASE_URL}/{location_name}.json", params=params)
+    data = response.json()
+    if response.status_code == 200 and data["features"]:
+        return f"{data['features'][0]['center'][1]},{data['features'][0]['center'][0]}"
     else:
-        # Password correct.
-        return True
-    
-if check_password():
+        return None
 
-    @st.cache_data
-    def get_location_coordinates(location_name):
-        params = {
-            "access_token": mbtk,
-            "limit": 1,
-        }
+@st.cache_data
+def get_venues(location, radius):
+    params = {
+        "query": "food",
+        "ll": location,
+        "radius": radius,
+        "open_now": "true",
+        "sort": "DISTANCE",
+        "fields": "fsq_id,name,geocodes,location,categories,distance,website,tel",
+    }
 
-        response = requests.get(f"{MAPBOX_GEOCODING_API_BASE_URL}/{location_name}.json", params=params)
+    headers = {
+        "Accept": "application/json",
+        "Authorization": fstk
+    }
+
+    response = requests.get(FOURSQUARE_API_BASE_URL, headers=headers, params=params)
+
+    if response.status_code == 200:
         data = response.json()
+        venues = data["results"]
+        df_venues = pd.DataFrame.from_records(venues)
 
-        if response.status_code == 200 and data["features"]:
-            return f"{data['features'][0]['center'][1]},{data['features'][0]['center'][0]}"
+        # Select and rename columns
+        df_venues = df_venues[["fsq_id", "name", "geocodes", "location", "categories", "distance", "website", "tel"]]
+        df_venues.columns = ["id", "name", "geocodes", "location", "categories", "distance", "website", "tel"]
+
+        # Extract latitude and longitude
+        df_venues["latitude"] = df_venues["geocodes"].apply(lambda x: x["main"]["latitude"])
+        df_venues["longitude"] = df_venues["geocodes"].apply(lambda x: x["main"]["longitude"])
+
+        # Extract formatted address
+        df_venues["address"] = df_venues["location"].apply(lambda x: x["address"])
+
+        # Convert categories to comma-separated string
+        df_venues["categories"] = df_venues["categories"].apply(lambda x: ", ".join([category["name"] for category in x]))
+
+        # Drop unnecessary columns
+        df_venues.drop(columns=["geocodes", "location"], inplace=True)
+        return df_venues
+    else:
+        st.error("Error fetching data from the API.")
+        return pd.DataFrame()
+
+st.title("Decides For You")
+location_name = st.text_input("Enter a town or city name:", value="")
+radius_uncoverted = st.number_input("Search Radius(miles):", min_value=1, max_value=50, value=5, step=1)
+radius = radius_uncoverted * 1609
+
+if st.button("Find Random Venue"):
+    location_coordinates = get_location_coordinates(location_name)
+    if location_coordinates:
+        venues = get_venues(location_coordinates, radius)
+        if len(venues) == 0:
+            st.error("No venues found. Please try another location or radius.")
         else:
-            return None
+            random_venue = np.random.choice(venues['name'].values)
+            selected_venue = venues.loc[venues['name'] == random_venue].squeeze()
+            st.write(f"{selected_venue['name']}")
+            st.write(f"Address: {selected_venue['address']}")
+            st.write(f"Website: {selected_venue['website']}")
+            st.write(f"Phone number: {selected_venue['tel']}")
 
 
-    @st.cache_data
-    def get_venues(location, radius):
-        params = {
-            "query": "food",
-            "ll": location,
-            "radius": radius,
-            "open_now": "true",
-            "sort": "DISTANCE",
-            "fields": "fsq_id,name,geocodes,location,categories,distance,website,tel",
-        }
-
-        headers = {
-            "Accept": "application/json",
-            "Authorization": fstk
-        }
-
-        response = requests.get(FOURSQUARE_API_BASE_URL, headers=headers, params=params)
-
-        if response.status_code == 200:
-            data = response.json()
-            venues = data["results"]
-            df_venues = pd.DataFrame.from_records(venues)
-
-            # Select and rename columns
-            df_venues = df_venues[["fsq_id", "name", "geocodes", "location", "categories", "distance", "website", "tel"]]
-            df_venues.columns = ["id", "name", "geocodes", "location", "categories", "distance", "website", "tel"]
-
-            # Extract latitude and longitude
-            df_venues["latitude"] = df_venues["geocodes"].apply(lambda x: x["main"]["latitude"])
-            df_venues["longitude"] = df_venues["geocodes"].apply(lambda x: x["main"]["longitude"])
-
-            # Extract formatted address
-            df_venues["address"] = df_venues["location"].apply(lambda x: x["address"])
-
-            # Convert categories to comma-separated string
-            df_venues["categories"] = df_venues["categories"].apply(lambda x: ", ".join([category["name"] for category in x]))
-
-            # Drop unnecessary columns
-            df_venues.drop(columns=["geocodes", "location"], inplace=True)
-            return df_venues
-        else:
-            st.error("Error fetching data from the API.")
-            return pd.DataFrame()
-
-    st.title("Decider4U")
-    location_name = st.text_input("Enter a town or city name:", value="")
-    radius_uncoverted = st.number_input("Search Radius(miles):", min_value=1, max_value=50, value=5, step=1)
-    radius = radius_uncoverted * 1609
-
-    if st.button("Find Random Venue"):
-        location_coordinates = get_location_coordinates(location_name)
-        if location_coordinates:
-            venues = get_venues(location_coordinates, radius)
-            if len(venues) == 0:
-                st.error("No venues found. Please try another location or radius.")
-            else:
-                random_venue = np.random.choice(venues['name'].values)
-                selected_venue = venues.loc[venues['name'] == random_venue].squeeze()
-                st.write(f"{selected_venue['name']}")
-                st.write(f"Address: {selected_venue['address']}")
-                st.write(f"Website: {selected_venue['website']}")
-                st.write(f"Phone number: {selected_venue['tel']}")
-
-
-                st.pydeck_chart(pdk.Deck(
-                    map_style="mapbox://styles/mapbox/light-v9",
-                    initial_view_state={
-                        "latitude": selected_venue['latitude'],
-                        "longitude": selected_venue['longitude'],
-                        "zoom": 16,
-                        "pitch": 50,
-                    },
-                    layers=[
-                        pdk.Layer(
-                            "ScatterplotLayer",
-                            data=pd.DataFrame([selected_venue]),
-                            get_position=["longitude", "latitude"],
-                            get_radius=10,
-                            get_fill_color=[255, 0, 0, 160],
-                            pickable=True,
-                            auto_highlight=True,
-                        ),
-                    ],
-                    tooltip={"text": "{name}\nAddress: {address}\nContact: {contact}"}
-                    ))
-        else:
-            st.error("Invalid location. Please enter a valid town or city name.")
+            st.pydeck_chart(pdk.Deck(
+                map_style="mapbox://styles/mapbox/satellite-streets-v11",
+                initial_view_state={
+                    "latitude": selected_venue['latitude'],
+                    "longitude": selected_venue['longitude'],
+                    "zoom": 16,
+                    "pitch": 25,
+                },
+                layers=[
+                    pdk.Layer(
+                        "ScatterplotLayer",
+                        data=pd.DataFrame([selected_venue]),
+                        get_position=["longitude", "latitude"],
+                        get_radius=10,
+                        get_fill_color=[255, 0, 0, 160],
+                        pickable=True,
+                        auto_highlight=True,
+                    ),
+                ],
+                tooltip={"text": "{name}\nAddress: {address}"}
+                ))
+    else:
+        st.error("Invalid location. Please enter a valid town or city name.")
 
 st.markdown("""
     <style>
@@ -164,7 +119,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Hide the "made with Streamlit" footer
 hide_streamlit_style = """
     <style>
         #MainMenu {display: none;}
@@ -172,5 +126,3 @@ hide_streamlit_style = """
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-
-# Add your Streamlit app code below
