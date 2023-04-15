@@ -73,7 +73,7 @@ location_name = st.text_input("Enter a town or city name:", value="")
 radius_uncoverted = st.number_input("Search Radius(miles):", min_value=1, max_value=50, value=5, step=1)
 radius = radius_uncoverted * 1609
 
-ICON_URL = "https://upload.wikimedia.org/wikipedia/commons/c/c4/Projet_bi%C3%A8re_logo_v2.png"
+ICON_URL = https://upload.wikimedia.org/wikipedia/commons/c/c4/Projet_bi%C3%A8re_logo_v2.png
 
 
 if st.button("Find Random Venue"):
@@ -98,6 +98,7 @@ if st.button("Find Random Venue"):
             "height": 242,
             "anchorY": 242,
             }
+
             st.pydeck_chart(pdk.Deck(
                 map_style=None,
                 initial_view_state={
