@@ -115,7 +115,7 @@ if st.button("Find Random Venue"):
                         get_icon="icon_data",
                         get_size=4,
                         size_scale=15,
-                        opacity=0.0
+                        opacity=0.0,
                         pickable=True,
                     ),
                 ],
