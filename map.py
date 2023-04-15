@@ -119,6 +119,7 @@ if st.button("Find Random Venue"):
                     ),
                 ],
                 tooltip={"text": "{name}\nAddress: {address}"}
+                map_provider=mapbox
                 ))
     else:
         st.error("Invalid location. Please enter a valid town or city name.")
