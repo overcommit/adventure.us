@@ -100,8 +100,7 @@ if st.button("Find Random Venue"):
 
 
             st.pydeck_chart(pdk.Deck(
-                "IconLayer",
-                map_style="mapbox://styles/mapbox/satellite-streets-v11",
+                map_style=None,
                 initial_view_state={
                     "latitude": selected_venue['latitude'],
                     "longitude": selected_venue['longitude'],
