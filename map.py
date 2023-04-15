@@ -4,6 +4,9 @@ import numpy as np
 import pandas as pd
 import requests
 
+mbtk = st.secrets["mbtk"]
+fstk = st.secrets["fstk"]
+
 FOURSQUARE_API_BASE_URL = "https://api.foursquare.com/v3/places/search"
 MAPBOX_GEOCODING_API_BASE_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places"
 
