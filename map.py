@@ -118,7 +118,7 @@ if st.button("Find Random Venue"):
                         pickable=True,
                     ),
                 ],
-                tooltip={"text": "{name}\nAddress: {address}"}
+                tooltip={"text": "{name}\nAddress: {address}"},
                 map_provider=mapbox
                 ))
     else:
