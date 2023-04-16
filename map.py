@@ -73,7 +73,7 @@ location_name = st.text_input("Enter a town or city name:", value="")
 radius_uncoverted = st.number_input("Search Radius(miles):", min_value=1, max_value=50, value=5, step=1)
 radius = radius_uncoverted * 1609
 
-ICON_URL = "https://icons8.com/icon/115346/restaurant"
+ICON_URL = "https://raw.githubusercontent.com/overcommit/adventure.us/main/reshot-icon-restaurant.png"
 
 icon_data = {
 # Icon from Wikimedia, used the Creative Commons Attribution-Share Alike 3.0
