@@ -79,9 +79,9 @@ icon_data = {
 # Icon from Wikimedia, used the Creative Commons Attribution-Share Alike 3.0
 # Unported, 2.5 Generic, 2.0 Generic and 1.0 Generic licenses
 "url": ICON_URL,
-"width": 512,
-"height": 512,
-"anchorY": 512,
+"width": 256,
+"height": 256,
+"anchorY": 256,
 }
 
 if st.button("Find Random Venue"):
