@@ -71,7 +71,7 @@ def get_venues(location, radius):
         st.error("Error fetching data from the API.")
         return pd.DataFrame()
 
-st.title("Adventure, Us")
+st.title("What Am I Eating?")
 location_name = st.text_input("Enter a town or city name:", value="")
 radius_uncoverted = st.number_input("Search Radius(miles):", min_value=1, max_value=50, value=5, step=1)
 radius = radius_uncoverted * 1609
