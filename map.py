@@ -99,7 +99,7 @@ if st.button("Find Random Venue"):
             st.write(f"Phone number: {selected_venue['tel']}")
 
             st.pydeck_chart(pdk.Deck(
-                map_style="mapbox://styles/mapbox/streets-v11",
+                map_style="mapbox://styles/mapbox/navigation-night-v1",
                 initial_view_state={
                     "latitude": selected_venue['latitude'],
                     "longitude": selected_venue['longitude'],
