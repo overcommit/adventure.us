@@ -5,6 +5,7 @@ import pandas as pd
 import requests
 from FS import fstk
 from MB import mbtk
+import urllib.parse
 
 pd.set_option('display.max_rows', None)
 
@@ -12,24 +13,10 @@ FOURSQUARE_API_BASE_URL = "https://api.foursquare.com/v3/places/search"
 MAPBOX_GEOCODING_API_BASE_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places"
 
 @st.cache_data
-def get_location_coordinates(location_name):
-    params = {
-        "access_token": mbtk,
-        "limit": 1,
-    }
-    response = requests.get(f"{MAPBOX_GEOCODING_API_BASE_URL}/{location_name}.json", params=params)
-    data = response.json()
-    if response.status_code == 200 and data["features"]:
-        return f"{data['features'][0]['center'][1]},{data['features'][0]['center'][0]}"
-    else:
-        return None
-
-@st.cache_data
-def get_venues(location, radius):
+def get_venues(near):
     params = {
         "query": "food",
-        "ll": location,
-        "radius": radius,
+        "near": near,
         "open_now": "true",
         "sort": "DISTANCE",
         "fields": "fsq_id,name,geocodes,location,categories,distance,website,tel,menu",
@@ -46,6 +33,11 @@ def get_venues(location, radius):
         data = response.json()
         venues = data["results"]
         df_venues = pd.DataFrame.from_records(venues)
+
+        required_columns = ["fsq_id", "name", "geocodes", "location", "categories", "distance", "website", "tel", "menu"]
+        if not set(required_columns).issubset(set(df_venues.columns)):
+            st.error(f"Location not found. Please try another location or add the state abbreviation.")
+            return pd.DataFrame()
 
         # Select and rename columns
         df_venues = df_venues[["fsq_id", "name", "geocodes", "location", "categories", "distance", "website", "tel","menu",]]
@@ -72,9 +64,7 @@ def get_venues(location, radius):
         return pd.DataFrame()
 
 st.title("What Am I Eating?")
-location_name = st.text_input("Enter a town or city name:", value="")
-radius_uncoverted = st.number_input("Search Radius(miles):", min_value=1, max_value=50, value=5, step=1)
-radius = radius_uncoverted * 1609
+location_name = f'"{st.text_input("Enter a town or city name:")}"'
 
 ICON_URL = "https://raw.githubusercontent.com/overcommit/adventure.us/main/reshot-icon-restaurant.png"
 
@@ -132,12 +122,10 @@ category_label = (
 category = st.selectbox("Select a category", category_label)
 
 if st.button("Find Random Venue"):
-    location_coordinates = get_location_coordinates(location_name)
-    if location_coordinates:
-        venues = get_venues(location_coordinates, radius)
-        st.dataframe(venues)
+    if location_name:
+        venues = get_venues(location_name)
         if len(venues) == 0:
-            st.error("No venues found. Please try another location or increase your search radius.")
+            st.error("No venues found. Please try another location")
         else:
             venues_filtered = venues[venues['categories'].str.contains(category, case=False)]
             if len(venues_filtered) == 0:
