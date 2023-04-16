@@ -3,7 +3,6 @@ import pydeck as pdk
 import numpy as np
 import pandas as pd
 import requests
-
 mbtk = st.secrets["mbtk"]
 fstk = st.secrets["fstk"]
 
@@ -63,6 +62,7 @@ def get_venues(location, radius):
 
         # Drop unnecessary columns
         df_venues.drop(columns=["geocodes", "location"], inplace=True)
+        df_venues['icon_data'] = [icon_data] * len(df_venues)
         return df_venues
     else:
         st.error("Error fetching data from the API.")
@@ -73,7 +73,16 @@ location_name = st.text_input("Enter a town or city name:", value="")
 radius_uncoverted = st.number_input("Search Radius(miles):", min_value=1, max_value=50, value=5, step=1)
 radius = radius_uncoverted * 1609
 
-ICON_URL = "https://upload.wikimedia.org/wikipedia/commons/c/c4/Projet_bi%C3%A8re_logo_v2.png"
+ICON_URL = "https://icons8.com/icon/115346/restaurant"
+
+icon_data = {
+# Icon from Wikimedia, used the Creative Commons Attribution-Share Alike 3.0
+# Unported, 2.5 Generic, 2.0 Generic and 1.0 Generic licenses
+"url": ICON_URL,
+"width": 512,
+"height": 512,
+"anchorY": 512,
+}
 
 if st.button("Find Random Venue"):
     location_coordinates = get_location_coordinates(location_name)
@@ -89,17 +98,8 @@ if st.button("Find Random Venue"):
             st.write(f"Website: {selected_venue['website']}")
             st.write(f"Phone number: {selected_venue['tel']}")
 
-            icon_data = {
-            # Icon from Wikimedia, used the Creative Commons Attribution-Share Alike 3.0
-            # Unported, 2.5 Generic, 2.0 Generic and 1.0 Generic licenses
-            "url": ICON_URL,
-            "width": 242,
-            "height": 242,
-            "anchorY": 242,
-            }
-            st.write(f"{icon_data}")
             st.pydeck_chart(pdk.Deck(
-                map_style=None,
+                map_style="mapbox://styles/mapbox/streets-v11",
                 initial_view_state={
                     "latitude": selected_venue['latitude'],
                     "longitude": selected_venue['longitude'],
@@ -111,10 +111,9 @@ if st.button("Find Random Venue"):
                         "IconLayer",
                         data=pd.DataFrame([selected_venue]),
                         get_position=["longitude", "latitude"],
-                        get_icon=icon_data,
+                        get_icon="icon_data",
                         get_size=4,
                         size_scale=15,
-                        opacity=0.5,
                         pickable=True,
                     ),
                 ],
