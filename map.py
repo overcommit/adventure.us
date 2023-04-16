@@ -3,9 +3,9 @@ import pydeck as pdk
 import numpy as np
 import pandas as pd
 import requests
-from FS import fstk
-from MB import mbtk
-import urllib.parse
+
+mbtk = st.secrets["mbtk"]
+fstk = st.secrets["fstk"]
 
 pd.set_option('display.max_rows', None)
 
