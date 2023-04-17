@@ -119,7 +119,7 @@ category_label = (
 "Theme Restaurant",
 )
 
-category = st.selectbox("Select a category", category_label)
+category = st.selectbox("Select a category filter(Default searches all categories):", category_label)
 
 if st.button("Find Random Venue"):
     if location_name:
