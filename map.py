@@ -3,7 +3,6 @@ import pydeck as pdk
 import numpy as np
 import pandas as pd
 import requests
-
 mbtk = st.secrets["mbtk"]
 fstk = st.secrets["fstk"]
 
@@ -13,15 +12,19 @@ FOURSQUARE_API_BASE_URL = "https://api.foursquare.com/v3/places/search"
 MAPBOX_GEOCODING_API_BASE_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places"
 
 @st.cache_data
-def get_venues(near):
+def get_venues(**kwargs):
     params = {
         "query": "food",
-        "near": near,
+        "near": kwargs.get("near"),
         "open_now": "true",
         "sort": "DISTANCE",
         "fields": "fsq_id,name,geocodes,location,categories,distance,website,tel,menu",
         "limit": 50,
+        "categories": kwargs.get("genre", None),
     }
+    if "category" in kwargs:
+            params["categories"] = kwargs["category"]
+    st.write(params)
 
     headers = {
         "Accept": "application/json",
@@ -64,7 +67,7 @@ def get_venues(near):
         return pd.DataFrame()
 
 st.title("What Am I Eating?")
-location_name = f'"{st.text_input("Enter a town or city name:")}"'
+location_name = st.text_input("Enter a town or city name:")
 
 ICON_URL = "https://raw.githubusercontent.com/overcommit/adventure.us/main/reshot-icon-restaurant.png"
 
@@ -75,90 +78,85 @@ icon_data = {
     "anchorY": 256,
 }
 
-category_label = (
-"",
-"Bagel Shop",
-"Bakery",
-"Breakfast Spot",
-"Cafes, Coffee, and Tea Houses",
-"Donut Shop",
-"Frozen Yogurt Shop",
-"Ice Cream Parlor",
-"Asian Restaurant",
-"BBQ Joint",
-"Bistro",
-"Buffet",
-"Burger Joint",
-"Chinese Restaurant",
-"Comfort Food Restaurant",
-"Deli",
-"Diner",
-"Eastern European Restaurant",
-"Fast Food Restaurant",
-"Filipino Restaurant",
-"French Restaurant",
-"Fried Chicken Joint",
-"Halal Restaurant",
-"Hawaiian Restaurant",
-"Hot Dog Joint",
-"Indian Restaurant",
-"Italian Restaurant",
-"Japanese Restaurant",
-"Sushi Restaurant",
-"Kebab Restaurant",
-"Korean Restaurant",
-"Latin American Restaurant",
-"Mediterranean Restaurant",
-"Mexican Restaurant",
-"Middle Eastern Restaurant",
-"Pizzeria",
-"Seafood Restaurant",
-"Shawarma Restaurant",
-"Steakhouse",
-"Thai Restaurant",
-"Theme Restaurant",
-)
+category_label = {"All Categories": "13000",
+"Bagel Shop": "13001",
+"Bakery": "13002",
+"Breakfast Spot": "13028",
+"Cafes, Coffee, and Tea Houses": "13032",
+"Donut Shop": "13043",
+"Frozen Yogurt Shop": "13044",
+"Ice Cream Parlor": "13046",
+"Asian Restaurant": "13072",
+"BBQ Joint": "13026",
+"Bistro": "13027",
+"Buffet": "13030",
+"Burger Joint": "13031",
+"Chinese Restaurant": "13099",
+"Comfort Food Restaurant": "13134",
+"Deli": "13039",
+"Diner": "13049",
+"Eastern European Restaurant": "13139",
+"Fast Food Restaurant": "13145",
+"Filipino Restaurant": "13146",
+"French Restaurant": "13148",
+"Fried Chicken Joint": "13055",
+"Halal Restaurant": "13191",
+"Hawaiian Restaurant": "13192",
+"Hot Dog Joint": "13058",
+"Indian Restaurant": "13199",
+"Italian Restaurant": "13236",
+"Japanese Restaurant": "13263",
+"Sushi Restaurant": "13276",
+"Kebab Restaurant": "13288",
+"Korean Restaurant": "13289",
+"Latin American Restaurant": "13297",
+"Mediterranean Restaurant": "13302",
+"Mexican Restaurant": "13303",
+"Middle Eastern Restaurant": "13309",
+"Pizzeria": "13064",
+"Seafood Restaurant": "13338",
+"Shawarma Restaurant": "13339",
+"Steakhouse": "13383",
+"Thai Restaurant": "13352",
+"Theme Restaurant": "13354",
+}
 
-category = st.selectbox("Select a category filter(Default searches all categories):", category_label)
+category = st.selectbox("Select a category(Default searches all categories):", category_label.keys())
 
 if st.button("Find Random Venue"):
     if location_name:
-        venues = get_venues(location_name)
+        venues = get_venues(near=location_name, genre=category_label[category])
         if len(venues) == 0:
-            st.error("No venues found. Please try another location")
+            st.error("No venues found. Please try another location or category")
         else:
-            venues_filtered = venues[venues['categories'].str.contains(category, case=False)]
-            if len(venues_filtered) == 0:
-                st.error(f"No {category} venues found. Please try another category.")
-            else:
-                random_venue = np.random.choice(venues_filtered['name'].values)
-                selected_venue = venues.loc[venues['name'] == random_venue].squeeze()
-                st.write(f"{selected_venue['name']}")
-                st.write(f"Address: {selected_venue['address']}")
-                st.write(f"Website: {selected_venue['website'] if selected_venue['website'] else 'Unavailable'}")
-                st.write(f"Phone number: {selected_venue['tel']}")
-                st.write(f"Menu: {selected_venue['menu'] if selected_venue['menu'] else 'Unavailable'}")
-                st.pydeck_chart(pdk.Deck(
-                    map_style="mapbox://styles/mapbox/navigation-night-v1",
-                    initial_view_state={
-                        "latitude": selected_venue['latitude'],
-                        "longitude": selected_venue['longitude'],
-                        "zoom": 16,
-                        "pitch": 25,
-                    },
-                    layers=[
-                        pdk.Layer(
-                            "IconLayer",
-                            data=pd.DataFrame([selected_venue]),
-                            get_position=["longitude", "latitude"],
-                            get_icon="icon_data",
-                            get_size=4,
-                            size_scale=15,
-                            pickable=True,
-                        ),
-                    ],
-                    tooltip={"text": "{name}\nAddress: {address}"},
-                ))
+            random_venue = np.random.choice(venues['name'].values)
+            selected_venue = venues.loc[venues['name'] == random_venue].squeeze()
+            st.write(f"{selected_venue['name']}")
+            st.write(f"Address: {selected_venue['address']}")
+            st.write(f"Website: {selected_venue['website'] if selected_venue['website'] else 'Unavailable'}")
+            st.write(f"Phone number: {selected_venue['tel']}")
+            st.write(f"Menu: {selected_venue['menu'] if selected_venue['menu'] else 'Unavailable'}")
+            st.pydeck_chart(pdk.Deck(
+                map_style="mapbox://styles/mapbox/navigation-night-v1",
+                initial_view_state={
+                    "latitude": selected_venue['latitude'],
+                    "longitude": selected_venue['longitude'],
+                    "zoom": 16,
+                    "pitch": 25,
+                },
+                layers=[
+                    pdk.Layer(
+                        "IconLayer",
+                        data=pd.DataFrame([selected_venue]),
+                        get_position=["longitude", "latitude"],
+                        get_icon="icon_data",
+                        get_size=4,
+                        size_scale=15,
+                        pickable=True,
+                    ),
+                ],
+                tooltip={"text": "{name}\nAddress: {address}"},
+            ))
     else:
         st.error("Invalid location. Please enter a valid town or city name.")
 
