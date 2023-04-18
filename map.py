@@ -24,8 +24,6 @@ def get_venues(**kwargs):
     }
     if "category" in kwargs:
             params["categories"] = kwargs["category"]
-    st.write(params)
-
     headers = {
         "Accept": "application/json",
         "Authorization": fstk
