@@ -67,7 +67,7 @@ def get_venues(**kwargs):
         return pd.DataFrame()
 
 st.title("What Am I Eating?")
-location_name = st.text_input("Enter a town or city name:")
+location_name = st.text_input("Enter a town or city:")
 
 ICON_URL = "https://raw.githubusercontent.com/overcommit/adventure.us/main/reshot-icon-restaurant.png"
 
@@ -121,7 +121,7 @@ category_label = {"All Categories": "13000",
 "Theme Restaurant": "13354",
 }
 
-category = st.selectbox("Select a category(Default searches all categories):", category_label.keys())
+category = st.selectbox("Select a category:", category_label.keys())
 
 if st.button("Find Random Venue"):
     if location_name:
