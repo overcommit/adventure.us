@@ -79,7 +79,6 @@ icon_data = {
 category_label = {"All Categories": "13000",
 "Bagel Shop": "13001",
 "Bakery": "13002",
-"Breakfast Spot": "13028",
 "Cafes, Coffee, and Tea Houses": "13032",
 "Donut Shop": "13043",
 "Frozen Yogurt Shop": "13044",
